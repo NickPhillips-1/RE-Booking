@@ -1,22 +1,12 @@
 import { CalendarCheck, CalendarX2, CircleAlert, Inbox, RefreshCw } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import {
-  api,
-  errorMessage,
-  useLoad,
-  writeErrorMessage,
-  type BookingPageLink,
-  type GuestBooking,
-} from '../api';
-import { logOut } from '../auth';
+import { api, errorMessage, useLoad, writeErrorMessage, type ClientBooking } from '../api';
 import { dateIn, detectZone, formatCalendarDay, formatTime } from '../time';
 import { EmptyState } from '../ui/EmptyState';
 import { PageHeader } from '../ui/PageHeader';
 import { SegmentedControl, type SegmentedOption } from '../ui/SegmentedControl';
 import { Sheet } from '../ui/Sheet';
-import { SoloShell } from '../ui/SoloShell';
-import { useViewer } from '../viewer';
 import { AppointmentRow, DayHeader } from './dashboard/BookingList';
 import {
   countByFilter,
@@ -28,7 +18,7 @@ import {
   type NextUp,
   type ScheduleFilter,
 } from './dashboard/schedule';
-import { GuestBookingPanel } from './GuestBookingPanel';
+import { ClientBookingPanel } from './ClientBookingPanel';
 
 const FILTERS: { value: ScheduleFilter; label: string }[] = [
   { value: 'upcoming', label: 'Upcoming' },
@@ -45,8 +35,7 @@ function useNow(): number {
   return now;
 }
 
-export default function GuestPage() {
-  const viewer = useViewer();
+export default function ClientPage() {
   const zone = detectZone();
   const now = useNow();
   const today = dateIn(new Date(now).toISOString(), zone);
@@ -54,8 +43,7 @@ export default function GuestPage() {
   const filter = parseFilter(searchParams.get('filter'));
 
   const [version, setVersion] = useState(0);
-  const bookings = useLoad(`guest-bookings|${version}`, () => api.guestListBookings());
-  const pages = useLoad('booking-pages', () => api.listBookingPages());
+  const bookings = useLoad(`client-bookings|${version}`, () => api.clientListBookings());
   const [cancelledIds, setCancelledIds] = useState<ReadonlySet<number>>(() => new Set());
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [cancelling, setCancelling] = useState(false);
@@ -74,17 +62,6 @@ export default function GuestPage() {
   const counts = countByFilter(all, now);
   const nextUp = findNextUp(all, now);
   const selected = all.find((booking) => booking.booking_id === selectedId) ?? null;
-  const fromBookings = new Map<string, string>();
-  for (const booking of all) fromBookings.set(booking.slug, booking.brand_name);
-  const listed = pages.data ?? pages.latest;
-  const bookLinks: BookingPageLink[] =
-    listed && listed.length > 0
-      ? listed
-      : [...fromBookings].map(([slug, brand_name]) => ({
-          slug,
-          brand_name,
-          agent_name: brand_name,
-        }));
 
   function setFilter(value: ScheduleFilter) {
     setSearchParams(
@@ -102,7 +79,7 @@ export default function GuestPage() {
     setVersion((current) => current + 1);
   }
 
-  function open(booking: GuestBooking, opener: HTMLElement) {
+  function open(booking: ClientBooking, opener: HTMLElement) {
     openerRef.current = opener;
     setCancelError(null);
     setNotice(null);
@@ -119,7 +96,7 @@ export default function GuestPage() {
     else resultsRef.current?.focus();
   }
 
-  async function cancel(booking: GuestBooking) {
+  async function cancel(booking: ClientBooking) {
     const day = formatCalendarDay(dateIn(booking.slot_start, zone));
     const when = formatTime(booking.slot_start, zone);
     if (
@@ -132,7 +109,7 @@ export default function GuestPage() {
     setCancelling(true);
     setCancelError(null);
     try {
-      await api.guestCancelBooking(booking.booking_id);
+      await api.clientCancelBooking(booking.booking_id);
       setCancelledIds((current) => new Set(current).add(booking.booking_id));
       setNotice('Appointment cancelled.');
       reload();
@@ -143,34 +120,17 @@ export default function GuestPage() {
     }
   }
 
-  const brand = { name: 'Appointments', to: '/guest' };
-
-  if (viewer.kind === 'unknown') {
-    return (
-      <SoloShell brand={brand}>
-        <title>Appointments</title>
-        <div className="shell-status" role="alert">
-          <p className="error">Could not confirm who is logged in.</p>
-          <button type="button" className="button small" onClick={logOut}>
-            Log out
-          </button>
-        </div>
-      </SoloShell>
-    );
-  }
-
   const filterOptions: SegmentedOption<ScheduleFilter>[] = FILTERS.map((option) => ({
     ...option,
     count: loaded ? counts[option.value] : undefined,
   }));
 
   return (
-    <SoloShell brand={brand}>
+    <>
       <title>Appointments</title>
       <PageHeader
         title="Appointments"
         description={`Appointments you book while logged in show up here. Times in ${zone}.`}
-        actions={<BookActions pages={bookLinks} />}
       />
 
       <div className="schedule-toolbar">
@@ -228,10 +188,9 @@ export default function GuestPage() {
             <AppointmentSkeleton />
           )
         ) : visible.length === 0 ? (
-          <GuestEmpty
+          <ClientEmpty
             filter={filter}
             hasOthers={all.length > 0}
-            pages={bookLinks}
             onShowAll={() => setFilter('all')}
           />
         ) : (
@@ -251,7 +210,7 @@ export default function GuestPage() {
 
       <Sheet open={selected !== null} labelledBy={panelTitleId} onClose={handleClosed}>
         {selected && (
-          <GuestBookingPanel
+          <ClientBookingPanel
             booking={selected}
             zone={zone}
             titleId={panelTitleId}
@@ -263,17 +222,17 @@ export default function GuestPage() {
           />
         )}
       </Sheet>
-    </SoloShell>
+    </>
   );
 }
 
 type DaySectionProps = {
-  group: DayGroup<GuestBooking>;
+  group: DayGroup<ClientBooking>;
   zone: string;
   today: string;
   now: number;
   nextUp: NextUp | null;
-  onOpen: (booking: GuestBooking, opener: HTMLElement) => void;
+  onOpen: (booking: ClientBooking, opener: HTMLElement) => void;
 };
 
 function DaySection({ group, zone, today, now, nextUp, onOpen }: DaySectionProps) {
@@ -289,13 +248,7 @@ function DaySection({ group, zone, today, now, nextUp, onOpen }: DaySectionProps
               name={booking.brand_name}
               zone={zone}
               ended={Date.parse(booking.slot_end) <= now}
-              marker={
-                nextUp?.bookingId === booking.booking_id
-                  ? nextUp.inProgress
-                    ? 'Now'
-                    : 'Next'
-                  : null
-              }
+              marker={nextUp?.bookingId === booking.booking_id && nextUp.inProgress ? 'Now' : null}
               onOpen={onOpen}
             />
           </li>
@@ -305,31 +258,13 @@ function DaySection({ group, zone, today, now, nextUp, onOpen }: DaySectionProps
   );
 }
 
-function bookLabel(pages: BookingPageLink[], page: BookingPageLink): string {
-  return pages.length === 1 ? `Book a demo with ${page.brand_name}` : `Book with ${page.brand_name}`;
-}
-
-function BookActions({ pages }: { pages: BookingPageLink[] }) {
-  if (pages.length === 0) return null;
-  return (
-    <>
-      {pages.map((page) => (
-        <Link key={page.slug} className="button primary" to={`/book/${page.slug}`}>
-          {bookLabel(pages, page)}
-        </Link>
-      ))}
-    </>
-  );
-}
-
-type GuestEmptyProps = {
+type ClientEmptyProps = {
   filter: ScheduleFilter;
   hasOthers: boolean;
-  pages: BookingPageLink[];
   onShowAll: () => void;
 };
 
-function GuestEmpty({ filter, hasOthers, pages, onShowAll }: GuestEmptyProps) {
+function ClientEmpty({ filter, hasOthers, onShowAll }: ClientEmptyProps) {
   if (filter === 'cancelled') {
     return (
       <EmptyState
@@ -358,7 +293,11 @@ function GuestEmpty({ filter, hasOthers, pages, onShowAll }: GuestEmptyProps) {
       icon={filter === 'all' ? <Inbox /> : <CalendarCheck />}
       title={filter === 'all' ? 'No appointments yet.' : 'No upcoming appointments.'}
       description="Book a demo with a realtor and it will show up here."
-      action={<BookActions pages={pages} />}
+      action={
+        <Link className="button primary" to="/client/book">
+          Book
+        </Link>
+      }
     />
   );
 }

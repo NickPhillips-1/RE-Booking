@@ -24,11 +24,11 @@ export function SoloShell({ brand, children }: SoloShellProps) {
   }
 
   const account =
-    viewer.kind === 'guest-account' ? (
+    viewer.kind === 'client-account' ? (
       <AccountMenu
-        name={viewer.guest.name}
-        email={viewer.guest.email}
-        role="Guest"
+        name={viewer.client.name}
+        email={viewer.client.email}
+        role="Client"
         onLogOut={logOut}
       />
     ) : viewer.kind === 'realtor' ? (
@@ -42,8 +42,8 @@ export function SoloShell({ brand, children }: SoloShellProps) {
       <button type="button" className="button small" onClick={logOut}>
         Log out
       </button>
-    ) : viewer.kind === 'guest' ? (
-      <Link className="button small" to="/login?as=guest">
+    ) : viewer.kind === 'client' ? (
+      <Link className="button small" to="/login?as=client">
         Log in
       </Link>
     ) : null;

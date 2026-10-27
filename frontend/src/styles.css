@@ -1,6 +1,6 @@
 /* Visual rules live in DESIGN.md: black and white, one family, three type roles,
    square controls except 8px button radius, 1px borders, no shadows, 8px base unit.
-   Login and signup use these rules. Booking, confirmation, guest appointments, and
+   Login uses these rules. Booking, confirmation, client appointments, and
    the agent dashboard layer their own tokens on top in dashboard.css. */
 
 :root {
@@ -101,29 +101,10 @@ a {
   gap: 16px;
 }
 
-.section + .section {
-  padding-top: 32px;
-  border-top: 1px solid var(--hairline);
-}
-
 .stack {
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-
-.booking-intro {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.role-line {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--hairline);
 }
 
 .fields {
@@ -156,28 +137,9 @@ a {
   color: var(--paper);
 }
 
-.button.block {
-  width: 100%;
-}
-
 .button:disabled,
 .chip:disabled {
   opacity: 0.35;
-  cursor: default;
-}
-
-.text-button {
-  padding: 0;
-  border: 0;
-  background: none;
-  font-size: 15px;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.text-button:disabled {
-  opacity: 0.35;
-  text-decoration: none;
   cursor: default;
 }
 
@@ -240,8 +202,7 @@ a {
   cursor: pointer;
 }
 
-.chip[aria-pressed='true'],
-.day[aria-pressed='true'] {
+.chip[aria-pressed='true'] {
   border-color: var(--ink);
   background: var(--ink);
   color: var(--paper);
@@ -257,55 +218,4 @@ a {
 .zone-line .select {
   width: auto;
   height: 36px;
-}
-
-/* Month */
-
-.month {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.month-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.month-nav {
-  display: flex;
-  gap: 16px;
-}
-
-.month-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 36px);
-  justify-content: space-between;
-  row-gap: 4px;
-}
-
-.weekday {
-  height: 24px;
-  text-align: center;
-}
-
-.day {
-  width: 36px;
-  height: 36px;
-  padding: 0;
-  border: 1px solid var(--paper);
-  border-radius: 0;
-  background: var(--paper);
-  font-size: 15px;
-  cursor: pointer;
-}
-
-.day:not(:disabled):hover {
-  border-color: var(--ink);
-}
-
-.day:disabled {
-  opacity: 0.35;
-  cursor: default;
 }

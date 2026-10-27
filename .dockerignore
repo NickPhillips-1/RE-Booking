@@ -1,0 +1,11 @@
+.git
+frontend/node_modules
+frontend/dist
+frontend/.vercel
+**/.venv
+**/__pycache__
+.env
+.env.local
+.env.production
+.env.production.local
+frontend/.env.production.local

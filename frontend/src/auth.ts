@@ -1,10 +1,10 @@
 import { useSyncExternalStore } from 'react';
 
-// Realtor and guest sessions share this key. The JWT role says which.
+// Realtor and client sessions share this key. The JWT role says which.
 const TOKEN_KEY = 'agent_token';
 const listeners = new Set<() => void>();
 
-export type SessionRole = 'agent' | 'guest';
+export type SessionRole = 'agent' | 'client';
 
 export function sessionRole(token: string): SessionRole | null {
   const part = token.split('.')[1];
@@ -13,7 +13,7 @@ export function sessionRole(token: string): SessionRole | null {
     const padded = part.replace(/-/g, '+').replace(/_/g, '/');
     const json = atob(padded.padEnd(Math.ceil(padded.length / 4) * 4, '='));
     const role = (JSON.parse(json) as { role?: string }).role;
-    return role === 'agent' || role === 'guest' ? role : null;
+    return role === 'agent' || role === 'client' ? role : null;
   } catch {
     return null;
   }
@@ -52,7 +52,7 @@ export function useAgentToken(): string | null {
   return token && sessionRole(token) === 'agent' ? token : null;
 }
 
-export function useGuestToken(): string | null {
+export function useClientToken(): string | null {
   const token = useSessionToken();
-  return token && sessionRole(token) === 'guest' ? token : null;
+  return token && sessionRole(token) === 'client' ? token : null;
 }

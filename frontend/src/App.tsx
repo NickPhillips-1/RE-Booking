@@ -1,15 +1,16 @@
 import type { ReactNode } from 'react';
 import { Link, Navigate, Route, Routes } from 'react-router';
-import { useAgentToken, useGuestToken } from './auth';
+import { useAgentToken, useClientToken } from './auth';
 import BookPage from './pages/BookPage';
+import ClientBookPage from './pages/ClientBookPage';
+import ClientLayout from './pages/ClientLayout';
+import ClientPage from './pages/ClientPage';
 import ConfirmedPage from './pages/ConfirmedPage';
 import DashboardLayout from './pages/dashboard/DashboardLayout';
 import HoursPage from './pages/dashboard/HoursPage';
 import MeetingsPage from './pages/dashboard/MeetingsPage';
 import SchedulePage from './pages/dashboard/SchedulePage';
-import GuestPage from './pages/GuestPage';
 import LoginPage from './pages/LoginPage';
-import SignupPage from './pages/SignupPage';
 
 export default function App() {
   return (
@@ -18,15 +19,19 @@ export default function App() {
       <Route path="/book/:slug" element={<BookPage />} />
       <Route path="/book/:slug/confirmed" element={<ConfirmedPage />} />
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/signup" element={<SignupPage />} />
+      <Route path="/guest" element={<Navigate to="/client" replace />} />
       <Route
-        path="/guest"
+        path="/client"
         element={
-          <RequireGuest>
-            <GuestPage />
-          </RequireGuest>
+          <RequireClient>
+            <ClientLayout />
+          </RequireClient>
         }
-      />
+      >
+        <Route index element={<ClientPage />} />
+        <Route path="book" element={<ClientBookPage />} />
+        <Route path="book/:slug" element={<ClientBookPage />} />
+      </Route>
       <Route
         path="/dashboard"
         element={
@@ -49,9 +54,9 @@ function RequireAgent({ children }: { children: ReactNode }) {
   return token ? children : <Navigate to="/login" replace />;
 }
 
-function RequireGuest({ children }: { children: ReactNode }) {
-  const token = useGuestToken();
-  return token ? children : <Navigate to="/login?as=guest" replace />;
+function RequireClient({ children }: { children: ReactNode }) {
+  const token = useClientToken();
+  return token ? children : <Navigate to="/login?as=client" replace />;
 }
 
 function NotFound() {

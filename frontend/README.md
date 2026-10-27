@@ -13,15 +13,15 @@ The app calls the API at `VITE_API_URL`, defaulting to `http://localhost:3000`. 
 
 - `/book/:slug`: public booking page
 - `/book/:slug/confirmed#token=…`: receipt with a cancel link
-- `/login`: realtor or guest login
-- `/signup`: create a guest account
-- `/guest`: a logged-in guest's appointments
+- `/login`: realtor or client login
+- `/client`: a logged-in client's appointments
+- `/client/book`, `/client/book/:slug`: book a demo from the client dashboard
 - `/dashboard`, `/dashboard/hours`, `/dashboard/meetings`: schedule, weekly hours, and meeting types, inside the dashboard header and sidebar
 
 ## Code
 
 - `src/api.ts`: one typed function per database RPC, plus `useLoad` for fetching
-- `src/auth.ts`: the session token, realtor or guest, kept in `sessionStorage`
+- `src/auth.ts`: the session token, realtor or client, kept in `sessionStorage`
 - `src/time.ts`: timezone and calendar helpers
 - `src/pages/`: one component per route
 - `src/pages/dashboard/`: `DashboardLayout.tsx` (header and sidebar) and one file per dashboard view

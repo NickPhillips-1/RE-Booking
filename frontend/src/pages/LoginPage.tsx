@@ -5,13 +5,13 @@ import { setToken, useSessionRole } from '../auth';
 import { ChoiceChips } from '../ui/ChoiceChips';
 import { Field } from '../ui/Field';
 
-type Account = 'realtor' | 'guest';
+type Account = 'realtor' | 'client';
 
 export default function LoginPage() {
   const role = useSessionRole();
   const [params] = useSearchParams();
   const [account, setAccount] = useState<Account>(() =>
-    params.get('as') === 'guest' ? 'guest' : 'realtor',
+    params.get('as') === 'client' ? 'client' : 'realtor',
   );
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -19,7 +19,7 @@ export default function LoginPage() {
   const [busy, setBusy] = useState(false);
 
   function choose(next: string) {
-    setAccount(next === 'guest' ? 'guest' : 'realtor');
+    setAccount(next === 'client' ? 'client' : 'realtor');
     setError(null);
   }
 
@@ -29,8 +29,8 @@ export default function LoginPage() {
     setError(null);
     try {
       const session =
-        account === 'guest'
-          ? await api.guestLogin(email, password)
+        account === 'client'
+          ? await api.clientLogin(email, password)
           : await api.login(email, password);
       setToken(session.token);
     } catch (failure) {
@@ -44,9 +44,9 @@ export default function LoginPage() {
   }
 
   if (role === 'agent') return <Navigate to="/dashboard" replace />;
-  if (role === 'guest') return <Navigate to="/guest" replace />;
+  if (role === 'client') return <Navigate to="/client" replace />;
 
-  const title = account === 'guest' ? 'Guest log in' : 'Realtor log in';
+  const title = account === 'client' ? 'Client log in' : 'Realtor log in';
 
   return (
     <main className="page">
@@ -59,14 +59,14 @@ export default function LoginPage() {
             label="Log in as"
             options={[
               { value: 'realtor', label: 'Realtor' },
-              { value: 'guest', label: 'Guest' },
+              { value: 'client', label: 'Client' },
             ]}
             selected={account}
             onSelect={choose}
           />
         </div>
         <p>
-          {account === 'guest'
+          {account === 'client'
             ? 'See and cancel appointments you book while logged in.'
             : 'Hours, meetings, and the schedule.'}
         </p>

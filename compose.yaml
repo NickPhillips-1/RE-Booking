@@ -48,20 +48,20 @@ services:
       # Checked when the seed runs. Compose interpolates every service, so a required
       # variable here would also be required in production, where the seed is off.
       SEED_AGENT_PASSWORD: ${SEED_AGENT_PASSWORD:-}
-      SEED_GUEST_PASSWORD: ${SEED_GUEST_PASSWORD:-}
+      SEED_CLIENT_PASSWORD: ${SEED_CLIENT_PASSWORD:-}
     command:
       - sh
       - -c
       - >-
         : "$${SEED_AGENT_PASSWORD:?set SEED_AGENT_PASSWORD in .env}";
-        : "$${SEED_GUEST_PASSWORD:?set SEED_GUEST_PASSWORD in .env}";
+        : "$${SEED_CLIENT_PASSWORD:?set SEED_CLIENT_PASSWORD in .env}";
         psql -X -q -v ON_ERROR_STOP=1
         -v slug=jane -v email=jane@example.com -v name='Jane Rivera'
         -v brand_name='Jane Rivera Homes' -v timezone=America/New_York
         -v password="$$SEED_AGENT_PASSWORD" -f /db/seed/agent.sql
         && psql -X -q -v ON_ERROR_STOP=1
-        -v email=guest@example.com -v name='Alex Chen' -v phone='555-010-0100'
-        -v password="$$SEED_GUEST_PASSWORD" -f /db/seed/guest.sql
+        -v email=client@example.com -v name='Alex Chen' -v phone='555-010-0100'
+        -v password="$$SEED_CLIENT_PASSWORD" -f /db/seed/client.sql
     depends_on:
       migrate:
         condition: service_completed_successfully

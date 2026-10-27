@@ -2,7 +2,7 @@
 
 A booking page for a real estate agent. A visitor opens the agent's public link, picks a meeting type, a day, and a time, then leaves a name, email, phone, and which property they want to see. The agent logs in to set weekly hours and meeting types, and to cancel a booking.
 
-The interface is specified in [DESIGN.md](DESIGN.md). Login and signup are black and white, with one typeface and flat controls, in a 420px column. Booking, confirmation, guest appointments, and the agent dashboard share a neutral white workspace set in Inter.
+The interface is specified in [DESIGN.md](DESIGN.md). Login is black and white, with one typeface and flat controls, in a 420px column. Booking, confirmation, client appointments, and the agent dashboard share a neutral white workspace set in Inter.
 
 ## Visitors
 
@@ -16,21 +16,21 @@ The public page lives at `/book/:slug`.
 
 If the agent has no weekly hours, the page shows "No open times yet."
 
-A visitor can also create a guest account and log in. Appointments booked during that session are listed at `/guest`, where they can be cancelled. That page also lists realtor pages, so a guest can book a demo without already knowing the slug. Booking without logging in still works; those appointments stay off the list and are cancelled from the confirmation page.
+A visitor with a client account can log in. Appointments booked during that session are listed at `/client`, where they can be cancelled. That page also lists realtor pages, so a client can book a demo without already knowing the slug. Booking without logging in still works; those appointments stay off the list and are cancelled from the confirmation page.
 
-After a successful booking, `/book/:slug/confirmed` is titled "Booked". It shows the meeting, time, guest, and property, then "Cancel appointment". The page address carries a private token, so the visitor can reload it or come back later to cancel.
+After a successful booking, `/book/:slug/confirmed` is titled "Booked". It shows the meeting, time, client, and property, then "Cancel appointment". The page address carries a private token, so the visitor can reload it or come back later to cancel.
 
 If someone else takes the slot first, the page shows one sentence under the time chips, "That time was just taken.", and reloads the open times.
 
 ## Agents
 
-`/login` asks for email and password, and a choice of Realtor or Guest. A failed attempt shows "Email or password is wrong." under the button. A session lasts 12 hours and ends at "Log out" or when the tab closes. Realtor login opens the dashboard. Guest login opens `/guest`.
+`/login` asks for email and password, and a choice of Realtor or Client. A failed attempt shows "Email or password is wrong." under the button. A session lasts 12 hours and ends at "Log out" or when the tab closes. Realtor login opens the dashboard. Client login opens `/client`.
 
-Guests create an account at `/signup` with name, email, phone, and a password of 8 to 200 characters. On a booking page, a logged-in guest's name, email, and phone are filled from the account. The local seed accounts are under [Logins](#logins).
+On a booking page, a logged-in client's name, email, and phone are filled from the account. The local seed accounts are under [Logins](#logins).
 
 The dashboard has a top bar and a sidebar. The top bar shows the brand name on the left and an account menu on the right, with the agent's role, name, and email and a "Log out" item. The sidebar switches between three views. On a phone, the sidebar becomes a row of links under the top bar.
 
-- **Schedule** (`/dashboard`). Appointments from today on, in a month calendar (the default view) or a list grouped by day. Filters show upcoming, all, or cancelled appointments. Each row shows the time, guest, property, meeting type, and status, and opens a panel with the guest's email and phone. A confirmed appointment can be cancelled from that panel.
+- **Schedule** (`/dashboard`). Appointments from today on, in a month calendar (the default view) or a list grouped by day. Filters show upcoming, all, or cancelled appointments. Each row shows the time, client, property, meeting type, and status, and opens a panel with the client's email and phone. A confirmed appointment can be cancelled from that panel.
 - **Hours** (`/dashboard/hours`). One row per weekday, such as "9:00 AM–5:00 PM" or "Closed". Editing happens in the row. If every day is closed, the page says "The public page stays empty until hours are set."
 - **Meetings** (`/dashboard/meetings`). Each type is a row with its name, duration, and whether it is active. "Add type" adds another row.
 
@@ -40,21 +40,26 @@ The dashboard has a top bar and a sidebar. The top bar shows the brand name on t
 - **PostgREST** exposes only the functions in the `api` schema, at `POST /rpc/<name>`. Every call is a POST, because each request also writes a rate-limit counter. The functions are in [db/migrations/002_api.sql](db/migrations/002_api.sql).
 - **The frontend** (`frontend/`) is a Vite, React, and TypeScript single-page app.
 
-Agent login checks a bcrypt hash in Postgres and returns a signed JWT. PostgREST verifies it on each request and runs the call as the `agent` role. Guest login does the same and runs as the `guest` role. Setting a new password ends that person's existing sessions.
+Agent login checks a bcrypt hash in Postgres and returns a signed JWT. PostgREST verifies it on each request and runs the call as the `agent` role. Client login does the same and runs as the `client` role. Setting a new password ends that person's existing sessions.
 
-Rate limits are counted in Postgres, per client address and per subject:
+Rate limits are counted in Postgres, per client address and per subject. Every request also takes one hit from a global per-address bucket. `api.pre_request` rejects a call whose role does not match the page that owns the endpoint.
 
 | Action | Limit |
 | --- | --- |
-| Failed logins for one email, agent or guest | 5 per 15 minutes, then correct passwords wait too |
-| Agent and guest logins from one address | 30 per 15 minutes |
-| Guest signups from one address | 20 per hour |
-| Guest appointment cancels | 60 per minute per guest |
+| Every request | 300 per minute per address |
+| Failed logins for one email, agent or client | 5 per 15 minutes, then correct passwords wait too |
+| Agent and client logins from one address | 30 per 15 minutes |
+| Client signups from one address | 20 per hour |
+| Client page reads | 120 per minute per address |
+| Client appointment cancels | 60 per minute per client, and 60 per minute per address |
 | Bookings for one email on one page | 8 per hour |
 | Bookings from one address | 20 per hour |
 | Receipt and cancel lookups | 60 per hour per address, 10 per hour per token |
 | Booking page, calendar, and time reads | 120 per minute per address |
-| Dashboard changes | 60 per minute per agent |
+| Dashboard reads | 120 per minute per address |
+| Dashboard changes | 60 per minute per agent, and 60 per minute per address |
+
+Login accepts anonymous callers. The booking and confirmation pages do too. Client page endpoints accept a client session. Dashboard endpoints accept an agent session.
 
 A limited request gets status 429 with a `Retry-After` header. The client address is the `X-Real-IP` header, which Caddy sets in production.
 
@@ -67,7 +72,7 @@ cp .env.example .env
 docker compose up -d
 ```
 
-This starts Postgres, applies the migrations, seeds one agent and one guest, and serves the API at [http://localhost:3000](http://localhost:3000). Then, from `frontend/`:
+This starts Postgres, applies the migrations, seeds one agent and one client, and serves the API at [http://localhost:3000](http://localhost:3000). Then, from `frontend/`:
 
 ```bash
 npm install
@@ -83,9 +88,7 @@ The seed creates two accounts. Passwords come from `.env`.
 | Account | Email | Password | Page |
 | --- | --- | --- | --- |
 | Realtor, Jane Rivera | `jane@example.com` | `SEED_AGENT_PASSWORD` (`jane-dev-password`) | [http://localhost:5173/login](http://localhost:5173/login) |
-| Guest, Alex Chen | `guest@example.com` | `SEED_GUEST_PASSWORD` (`guest-dev-password`) | [http://localhost:5173/login?as=guest](http://localhost:5173/login?as=guest) |
-
-A new guest account is at [http://localhost:5173/signup](http://localhost:5173/signup).
+| Client, Alex Chen | `client@example.com` | `SEED_CLIENT_PASSWORD` (`client-dev-password`) | [http://localhost:5173/login?as=client](http://localhost:5173/login?as=client) |
 
 To start over with an empty database, run `docker compose down -v && docker compose up -d`.
 
@@ -100,7 +103,7 @@ npm run typecheck
 npm run build
 ```
 
-GitHub Actions runs the lint, format, and typecheck steps on push and on pull requests. The workflow is [.github/workflows/lint.yml](.github/workflows/lint.yml).
+GitHub Actions runs the format and typecheck steps on push and on pull requests. The workflow is [.github/workflows/lint.yml](.github/workflows/lint.yml).
 
 ## Deploy
 
@@ -168,9 +171,9 @@ The script prompts for the password. Running it again for the same slug sets a n
 - `DESIGN.md`: screens and visual rules
 - `db/migrations/`: schema, roles, and the `api` functions
 - `db/seed/agent.sql`: one agent with hours and two meeting types
-- `db/seed/guest.sql`: one guest account
+- `db/seed/client.sql`: one client account
 - `deploy/`: migration runner, agent script, and Caddyfiles
 - `compose.yaml`, `compose.prod.yaml`: local stack and production overlay
 - `frontend/`: Vite, React, and TypeScript, plus its Dockerfile and `vercel.json`
 - `backend/`: FastAPI app with `GET /health`. The booking app runs on PostgREST, so nothing calls it yet.
-- `.github/workflows/lint.yml`: lint, format, and typecheck
+- `.github/workflows/lint.yml`: format and typecheck

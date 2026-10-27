@@ -57,9 +57,7 @@ export function BookingList({ bookings, zone, now, nextUp, onOpen }: BookingList
             booking={booking}
             zone={zone}
             ended={Date.parse(booking.slot_end) <= now}
-            marker={
-              nextUp?.bookingId === booking.booking_id ? (nextUp.inProgress ? 'Now' : 'Next') : null
-            }
+            marker={nextUp?.bookingId === booking.booking_id && nextUp.inProgress ? 'Now' : null}
             onOpen={onOpen}
           />
         </li>
@@ -86,7 +84,7 @@ function BookingRow({ booking, zone, ended, marker, onOpen }: BookingRowProps) {
   return (
     <AppointmentRow
       booking={booking}
-      name={booking.guest_name}
+      name={booking.client_name}
       zone={zone}
       ended={ended}
       marker={marker}
@@ -131,7 +129,7 @@ export function AppointmentRow<T extends AppointmentFields>({
         {marker && <span className="booking-marker">{marker}</span>}
       </span>
 
-      <span className="booking-guest">
+      <span className="booking-client">
         <span className="booking-name">{name}</span>
         <span className="booking-detail">
           <MapPin />

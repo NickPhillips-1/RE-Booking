@@ -1,23 +1,23 @@
 import { LoaderCircle, X } from 'lucide-react';
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { Link } from 'react-router';
-import type { GuestBooking } from '../api';
+import type { ClientBooking } from '../api';
 import { dateIn, formatCalendarDay, formatTime, LOCATION_LABELS } from '../time';
 import { StatusBadge } from '../ui/StatusBadge';
 import { LocationIcon } from './dashboard/BookingList';
 
-type GuestBookingPanelProps = {
-  booking: GuestBooking;
+type ClientBookingPanelProps = {
+  booking: ClientBooking;
   zone: string;
   titleId: string;
   cancelling: boolean;
   error: string | null;
   notice: string | null;
-  onCancel: (booking: GuestBooking) => void;
+  onCancel: (booking: ClientBooking) => void;
   onClose: () => void;
 };
 
-export function GuestBookingPanel({
+export function ClientBookingPanel({
   booking,
   zone,
   titleId,
@@ -26,7 +26,7 @@ export function GuestBookingPanel({
   notice,
   onCancel,
   onClose,
-}: GuestBookingPanelProps) {
+}: ClientBookingPanelProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const confirmed = booking.status === 'confirmed';
 
@@ -80,9 +80,6 @@ export function GuestBookingPanel({
 
         <PanelSection title="Realtor">
           <Property label="Name">{booking.agent_name}</Property>
-          <Property label="Book">
-            <Link to={`/book/${booking.slug}`}>Book again</Link>
-          </Property>
         </PanelSection>
       </div>
 
@@ -102,6 +99,9 @@ export function GuestBookingPanel({
         ) : (
           <p className="panel-note">This appointment is cancelled.</p>
         )}
+        <Link className="button" to={`/client/book/${booking.slug}`}>
+          Book again
+        </Link>
         {error && (
           <p className="error" role="alert">
             {error}

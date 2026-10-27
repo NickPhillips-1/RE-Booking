@@ -1,0 +1,12 @@
+:8080 {
+	handle /health {
+		respond "ok" 200
+	}
+
+	handle {
+		reverse_proxy 127.0.0.1:3000 {
+			# Rate limits key on this header, so it must be the real client address.
+			header_up X-Real-IP {http.request.header.Fly-Client-IP}
+		}
+	}
+}

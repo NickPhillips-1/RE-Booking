@@ -50,7 +50,7 @@ export function BookingPanel({
           </button>
         </div>
         <h2 className="panel-title" id={titleId}>
-          {booking.guest_name}
+          {booking.client_name}
         </h2>
         <p className="panel-subtitle">
           {booking.meeting_type_name} · {booking.duration_minutes} min
@@ -78,12 +78,14 @@ export function BookingPanel({
           </Property>
         </PanelSection>
 
-        <PanelSection title="Guest">
+        <PanelSection title="Client">
           <Property label="Email">
-            <a href={`mailto:${booking.guest_email}`}>{booking.guest_email}</a>
+            <a href={`mailto:${booking.client_email}`}>{booking.client_email}</a>
           </Property>
           <Property label="Phone">
-            <a href={`tel:${booking.guest_phone.replace(/[^\d+]/g, '')}`}>{booking.guest_phone}</a>
+            <a href={`tel:${booking.client_phone.replace(/[^\d+]/g, '')}`}>
+              {booking.client_phone}
+            </a>
           </Property>
         </PanelSection>
       </div>

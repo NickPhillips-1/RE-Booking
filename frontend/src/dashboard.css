@@ -1,4 +1,4 @@
-/* Agent dashboard, guest appointments, and the booking flow. Login and signup keep the
+/* Agent dashboard, client appointments, and the booking flow. Login keeps the
    black-and-white rules in styles.css. Everything here sits under .shell or uses
    dashboard-only class names, and colors exist only as tokens. */
 
@@ -20,10 +20,6 @@
   --color-danger-bg: #fef3f2;
   --color-danger-border: #fecdca;
   --color-backdrop: rgb(24 24 27 / 0.24);
-
-  --status-confirmed: #16a34a;
-  --status-pending: #d97706;
-  --status-cancelled: #a1a1aa;
 
   --font-sans: 'Inter Variable', Inter, ui-sans-serif, system-ui, sans-serif;
   --text-xs: 12px;
@@ -731,24 +727,9 @@ a.shell-brand:hover {
   white-space: nowrap;
 }
 
-.badge-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--radius-full);
-  background: var(--status-confirmed);
-}
-
-.badge[data-status='pending'] .badge-dot {
-  background: var(--status-pending);
-}
-
 .badge[data-status='cancelled'] {
   background: var(--color-bg-subtle);
   color: var(--color-text-secondary);
-}
-
-.badge[data-status='cancelled'] .badge-dot {
-  background: var(--status-cancelled);
 }
 
 /* Empty, loading, and alert states */
@@ -932,7 +913,7 @@ a.shell-brand:hover {
   display: grid;
   grid-template-areas:
     'time status'
-    'guest guest'
+    'client client'
     'meeting meeting';
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
@@ -988,15 +969,15 @@ a.shell-brand:hover {
   line-height: 18px;
 }
 
-.booking-guest,
+.booking-client,
 .booking-meeting {
   display: flex;
   min-width: 0;
 }
 
-.booking-guest {
+.booking-client {
   flex-direction: column;
-  grid-area: guest;
+  grid-area: client;
   gap: 2px;
 }
 
@@ -1067,7 +1048,7 @@ a.shell-brand:hover {
 
 @container booking-list (min-width: 640px) {
   .booking-row {
-    grid-template-areas: 'time guest meeting status chevron';
+    grid-template-areas: 'time client meeting status chevron';
     grid-template-columns: 120px minmax(0, 3fr) minmax(0, 2fr) 104px 16px;
     column-gap: var(--space-4);
   }

@@ -128,7 +128,7 @@ export default function SchedulePage() {
   async function cancel(booking: AgentBooking) {
     const day = formatCalendarDay(dateIn(booking.slot_start, zone));
     const when = formatTime(booking.slot_start, zone);
-    if (!window.confirm(`Cancel ${booking.guest_name}’s booking on ${day} at ${when}?`)) return;
+    if (!window.confirm(`Cancel ${booking.client_name}’s booking on ${day} at ${when}?`)) return;
     setCancelling(true);
     setCancelError(null);
     try {
@@ -302,7 +302,7 @@ function ScheduleEmpty({ filter, hasOthers, onShowAll }: ScheduleEmptyProps) {
       <EmptyState
         icon={<CalendarX2 />}
         title="No cancelled appointments."
-        description="Appointments you or your guests cancel will show up here."
+        description="Appointments you or your clients cancel will show up here."
       />
     );
   }

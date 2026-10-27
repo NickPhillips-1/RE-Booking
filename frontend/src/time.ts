@@ -93,10 +93,6 @@ export function formatTime(iso: string, zone: string): string {
   return DateTime.fromISO(iso, { zone }).toFormat('h:mm a');
 }
 
-export function formatDateTime(iso: string, zone: string): string {
-  return DateTime.fromISO(iso, { zone }).toFormat("cccc, LLLL d, yyyy 'at' h:mm a");
-}
-
 export function dateIn(iso: string, zone: string): string {
   return DateTime.fromISO(iso, { zone }).toFormat('yyyy-MM-dd');
 }

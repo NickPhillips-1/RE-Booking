@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router';
 import { api, ApiError, errorMessage, useLoad, type Receipt } from '../api';
-import { dateIn, detectZone, formatCalendarDay, formatTime, isValidZone, LOCATION_LABELS } from '../time';
+import {
+  dateIn,
+  detectZone,
+  formatCalendarDay,
+  formatTime,
+  isValidZone,
+  LOCATION_LABELS,
+} from '../time';
 import { EmptyState } from '../ui/EmptyState';
 import { PageHeader } from '../ui/PageHeader';
 import { SoloShell } from '../ui/SoloShell';
@@ -68,7 +75,10 @@ export default function ConfirmedPage() {
       <SoloShell brand={null}>
         <title>Booked</title>
         {loaded.error !== undefined ? (
-          <EmptyState title="Couldn’t load this booking." description={errorMessage(loaded.error)} />
+          <EmptyState
+            title="Couldn’t load this booking."
+            description={errorMessage(loaded.error)}
+          />
         ) : (
           <p className="quiet" role="status">
             Loading…
@@ -88,13 +98,13 @@ export default function ConfirmedPage() {
         description={
           isCancelled
             ? 'This booking is cancelled.'
-            : viewer.kind === 'guest-account'
-              ? 'This appointment is on your guest account.'
+            : viewer.kind === 'client-account'
+              ? 'This appointment is on your client account.'
               : 'Keep this page’s link. It is how you cancel.'
         }
         actions={
-          viewer.kind === 'guest-account' ? (
-            <Link className="button" to="/guest">
+          viewer.kind === 'client-account' ? (
+            <Link className="button" to="/client">
               Your appointments
             </Link>
           ) : undefined
@@ -123,8 +133,8 @@ export default function ConfirmedPage() {
               <dd>{zone}</dd>
             </div>
             <div>
-              <dt>Guest</dt>
-              <dd>{receipt.guest_name}</dd>
+              <dt>Client</dt>
+              <dd>{receipt.client_name}</dd>
             </div>
             <div>
               <dt>Property</dt>

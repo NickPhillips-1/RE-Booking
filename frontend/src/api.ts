@@ -54,7 +54,7 @@ export type Receipt = {
   location: MeetingLocation;
   brand_name: string;
   agent_timezone: string;
-  guest_name: string;
+  client_name: string;
   intake_note: string | null;
   slug: string;
 };
@@ -68,14 +68,14 @@ export type AgentSession = {
   brand_name: string;
 };
 
-export type GuestSession = {
-  guest_id: number;
+export type ClientSession = {
+  client_id: number;
   name: string;
   email: string;
   phone: string;
 };
 
-export type GuestBooking = {
+export type ClientBooking = {
   booking_id: number;
   meeting_type_name: string;
   duration_minutes: number;
@@ -97,9 +97,9 @@ export type AgentBooking = {
   location: MeetingLocation;
   slot_start: string;
   slot_end: string;
-  guest_name: string;
-  guest_email: string;
-  guest_phone: string;
+  client_name: string;
+  client_email: string;
+  client_phone: string;
   intake_note: string | null;
   status: 'confirmed' | 'cancelled';
 };
@@ -142,14 +142,14 @@ export function writeErrorMessage(error: unknown): string {
     : errorMessage(error);
 }
 
-type CallAuth = 'none' | 'agent' | 'guest' | 'guest-optional';
+type CallAuth = 'none' | 'agent' | 'client' | 'client-optional';
 
 function bearer(auth: CallAuth): string | null {
   if (auth === 'none') return null;
   const token = getToken();
   const role = token ? sessionRole(token) : null;
   if (auth === 'agent' && role === 'agent') return token;
-  if ((auth === 'guest' || auth === 'guest-optional') && role === 'guest') return token;
+  if ((auth === 'client' || auth === 'client-optional') && role === 'client') return token;
   return null;
 }
 
@@ -163,7 +163,7 @@ async function rpc<T>(
     Accept: 'application/json',
   };
   const token = bearer(auth);
-  if ((auth === 'agent' || auth === 'guest') && !token) {
+  if ((auth === 'agent' || auth === 'client') && !token) {
     throw new ApiError(401, 'session_expired', 'Log in again.');
   }
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -194,7 +194,7 @@ async function rpc<T>(
 }
 
 export const api = {
-  listBookingPages: () => rpc<BookingPageLink[]>('list_booking_pages'),
+  listBookingPages: () => rpc<BookingPageLink[]>('list_booking_pages', {}, 'client'),
   bookingPage: (slug: string) => rpc<BookingPage | null>('booking_page', { slug }),
   availableDates: (args: {
     slug: string;
@@ -213,19 +213,17 @@ export const api = {
     slug: string;
     meeting_type_id: number;
     slot_start: string;
-    guest_name: string;
-    guest_email: string;
-    guest_phone: string;
+    client_name: string;
+    client_email: string;
+    client_phone: string;
     intake_note: string | null;
-  }) => rpc<Receipt & { cancel_token: string }>('create_booking', args, 'guest-optional'),
+  }) => rpc<Receipt & { cancel_token: string }>('create_booking', args, 'client-optional'),
   bookingByToken: (token: string) => rpc<Receipt>('booking_by_token', { token }),
   cancelBooking: (token: string) => rpc<{ status: 'cancelled' }>('cancel_booking', { token }),
   login: (email: string, password: string) =>
     rpc<{ token: string; expires_at: string }>('login', { email, password }),
-  guestLogin: (email: string, password: string) =>
-    rpc<{ token: string; expires_at: string }>('guest_login', { email, password }),
-  guestSignup: (args: { name: string; email: string; phone: string; password: string }) =>
-    rpc<{ token: string; expires_at: string }>('guest_signup', args),
+  clientLogin: (email: string, password: string) =>
+    rpc<{ token: string; expires_at: string }>('client_login', { email, password }),
 
   agentSession: () => rpc<AgentSession>('agent_session', {}, 'agent'),
   agentListBookings: () => rpc<AgentBooking[]>('agent_list_bookings', {}, 'agent'),
@@ -238,10 +236,10 @@ export const api = {
   agentUpsertMeetingType: (input: MeetingTypeInput) =>
     rpc<AgentMeetingType>('agent_upsert_meeting_type', input, 'agent'),
 
-  guestSession: () => rpc<GuestSession>('guest_session', {}, 'guest'),
-  guestListBookings: () => rpc<GuestBooking[]>('guest_list_bookings', {}, 'guest'),
-  guestCancelBooking: (bookingId: number) =>
-    rpc<{ status: 'cancelled' }>('guest_cancel_booking', { booking_id: bookingId }, 'guest'),
+  clientSession: () => rpc<ClientSession>('client_session', {}, 'client'),
+  clientListBookings: () => rpc<ClientBooking[]>('client_list_bookings', {}, 'client'),
+  clientCancelBooking: (bookingId: number) =>
+    rpc<{ status: 'cancelled' }>('client_cancel_booking', { booking_id: bookingId }, 'client'),
 };
 
 type Loaded<T> = { key: string; data?: T; error?: unknown };
