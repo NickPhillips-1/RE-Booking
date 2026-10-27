@@ -110,7 +110,7 @@ uv run ruff format --check .
 uv run pytest
 ```
 
-GitHub Actions runs format, typecheck, and tests on push and on pull requests. The workflow is [.github/workflows/lint.yml](.github/workflows/lint.yml).
+GitHub Actions runs format, typecheck, and tests on push and on pull requests, then builds the frontend. The workflow is [.github/workflows/ci.yml](.github/workflows/ci.yml).
 
 ## Deploy
 
@@ -194,4 +194,4 @@ The script prompts for the password. Running it again for the same email sets a 
 - `compose.yaml`, `compose.prod.yaml`: local stack and production overlay
 - `frontend/`: Vite, React, and TypeScript, plus its Dockerfile and `vercel.json`
 - `backend/`: FastAPI `GET /health`, with its own checks. Booking goes through PostgREST.
-- `.github/workflows/lint.yml`: format, typecheck, and tests
+- `.github/workflows/ci.yml`: format, typecheck, tests, then the frontend build
