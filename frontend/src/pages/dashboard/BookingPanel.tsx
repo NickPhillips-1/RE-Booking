@@ -29,7 +29,6 @@ export function BookingPanel({
   const closeRef = useRef<HTMLButtonElement>(null);
   const confirmed = booking.status === 'confirmed';
 
-  // A successful cancel removes the focused button, so focus moves to Close.
   useEffect(() => {
     if (!confirmed) closeRef.current?.focus();
   }, [confirmed]);

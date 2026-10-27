@@ -36,7 +36,6 @@ function weeksOf(month: YearMonth): (string | null)[][] {
   return weeks;
 }
 
-// Arrow keys, Home/End, and Page Up/Down follow the WAI-ARIA date grid pattern.
 function dayForKey(key: string, day: string): string | null {
   switch (key) {
     case 'ArrowLeft':
@@ -72,7 +71,6 @@ export function ScheduleCalendar({
     groupByDay(bookings, zone, today).map((group) => [group.day, group.bookings]),
   );
   const bookedDays = [...byDay.keys()].sort();
-  // The API returns bookings from today on, so earlier days never have anything to show.
   const lastDay = [...bookedDays, shiftDate(today, { days: BOOKING_HORIZON_DAYS })].sort().at(-1)!;
   const clamp = (day: string) => (day < today ? today : day > lastDay ? lastDay : day);
 

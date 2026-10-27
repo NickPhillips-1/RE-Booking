@@ -1,6 +1,4 @@
 #!/bin/sh
-# One machine: Postgres, migrations, PostgREST, and Caddy.
-# Caddy is the only public port. It copies Fly's client IP into X-Real-IP.
 set -eu
 
 : "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}"

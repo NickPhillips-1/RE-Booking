@@ -1,12 +1,4 @@
 #!/bin/sh
-# Creates an agent with Monday to Friday hours and two meeting types, or sets a new
-# password for an existing slug (which ends that agent's sessions).
-#
-#   deploy/create-agent.sh <slug> <email> <name> <brand name> <timezone>
-#
-# Prompts for the password. For production, pass the compose command:
-#   COMPOSE="docker compose --env-file .env.production -f compose.yaml -f compose.prod.yaml" \
-#     deploy/create-agent.sh jane jane@example.com "Jane Rivera" "Jane Rivera Homes" America/New_York
 set -eu
 
 if [ $# -ne 5 ]; then
@@ -28,7 +20,6 @@ if [ "${#password}" -lt 12 ]; then
   exit 65
 fi
 
-# The password travels on stdin as a psql \set line, so it stays out of process arguments.
 escaped=$(printf '%s' "$password" | sed -e 's/\\/\\\\/g' -e "s/'/''/g")
 {
   printf "\\\\set password '%s'\n" "$escaped"

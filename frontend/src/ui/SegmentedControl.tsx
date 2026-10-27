@@ -12,7 +12,6 @@ type SegmentedControlProps<T extends string> = {
   options: SegmentedOption<T>[];
   value: T;
   onChange: (value: T) => void;
-  // Below 640px, options with an icon show only the icon; the label stays for screen readers.
   compact?: boolean;
 };
 

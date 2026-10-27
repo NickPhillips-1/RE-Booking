@@ -17,3 +17,5 @@ __pycache__/
 .ruff_cache/
 .mypy_cache/
 .pytest_cache/
+
+db/migrations/009_review.sql

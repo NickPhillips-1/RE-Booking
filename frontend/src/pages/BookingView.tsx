@@ -137,7 +137,8 @@ export function BookingView({ slug, variant, actions }: BookingViewProps) {
 
   const thisMonth = monthOf(todayIn(zone));
   const lastMonth = monthOf(todayIn(zone, BOOKING_HORIZON_DAYS));
-  const headerExtra = variant === 'client' ? actions : page.data ? headerActions(page.data, viewer) : undefined;
+  const headerExtra =
+    variant === 'client' ? actions : page.data ? headerActions(page.data, viewer) : undefined;
 
   function clearSelection() {
     setDay(null);

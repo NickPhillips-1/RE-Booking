@@ -1,5 +1,3 @@
--- Rename the guest account and the person on a booking to client.
-
 alter role guest rename to client;
 
 alter table private.guest rename to client;
@@ -140,8 +138,6 @@ begin
 
   perform private.rate_limit('create_booking', v_email || '|' || v_agent.slug, 8, 3600);
 
-  -- Serializes bookings and weekly-hour edits for one agent, so the check below
-  -- sees every booking committed before this one.
   perform pg_catalog.pg_advisory_xact_lock(v_agent.id);
 
   select c.* into v_candidate
@@ -198,7 +194,6 @@ begin
 
   select c.* into v_client from private.client c where lower(c.email) = v_email;
 
-  -- An unknown email still pays for one bcrypt comparison.
   if public.crypt(v_password, coalesce(v_client.password_hash, '$2a$10$' || repeat('x', 53)))
     is distinct from v_client.password_hash then
     perform private.rate_limit('login_failed', v_email, 5, 900);
@@ -413,23 +408,19 @@ declare
 begin
   perform private.rate_limit('ip:all', v_ip, 300, 60);
 
-  -- OpenAPI and any non-RPC request stop after the global limit.
   if v_fn is null then
     return;
   end if;
 
   case v_fn
-    -- Login. Anonymous only.
     when 'login', 'client_login' then
       perform private.require_role(v_role, array['web_anon']);
       perform private.rate_limit('ip:login', v_ip, 30, 900);
 
-    -- Signup. Anonymous only.
     when 'client_signup' then
       perform private.require_role(v_role, array['web_anon']);
       perform private.rate_limit('ip:client_signup', v_ip, 20, 3600);
 
-    -- Public booking page. Anonymous, or a client or agent who is already signed in.
     when 'booking_page', 'available_dates', 'available_slots' then
       perform private.require_role(v_role, array['web_anon', 'client', 'agent']);
       perform private.rate_limit('ip:public_read', v_ip, 120, 60);
@@ -437,12 +428,10 @@ begin
       perform private.require_role(v_role, array['web_anon', 'client', 'agent']);
       perform private.rate_limit('ip:create_booking', v_ip, 20, 3600);
 
-    -- Confirmation page. The cancel token is the secret; any role may present it.
     when 'booking_by_token', 'cancel_booking' then
       perform private.require_role(v_role, array['web_anon', 'client', 'agent']);
       perform private.rate_limit('ip:booking_token', v_ip, 60, 3600);
 
-    -- Client page.
     when 'client_session', 'client_list_bookings', 'list_booking_pages' then
       perform private.require_role(v_role, array['client']);
       perform private.rate_limit('ip:client_read', v_ip, 120, 60);
@@ -450,7 +439,6 @@ begin
       perform private.require_role(v_role, array['client']);
       perform private.rate_limit('ip:client_write', v_ip, 60, 60);
 
-    -- Dashboard.
     when 'agent_session', 'agent_list_bookings', 'agent_list_weekly_hours', 'agent_list_meeting_types' then
       perform private.require_role(v_role, array['agent']);
       perform private.rate_limit('ip:agent_read', v_ip, 120, 60);

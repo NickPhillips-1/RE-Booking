@@ -21,7 +21,6 @@ export default function HoursPage() {
   const [saved, setSaved] = useState<WeeklyHour[]>();
   const [editingDay, setEditingDay] = useState<number | null>(null);
   const loaded = useLoad('hours', () => api.agentListWeeklyHours());
-  // Only this page changes hours, so each save's returned week replaces the loaded one.
   const hours = saved ?? loaded.data;
 
   async function saveDay(weekday: number, range: Range | null) {

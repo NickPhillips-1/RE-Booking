@@ -34,6 +34,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Test
+        run: npm test
+
   backend:
     name: Backend
     runs-on: ubuntu-latest
@@ -55,3 +58,6 @@ jobs:
 
       - name: Check format
         run: uv run ruff format --check .
+
+      - name: Test
+        run: uv run pytest

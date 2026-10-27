@@ -1,8 +1,3 @@
--- Every API function is SECURITY DEFINER with an empty search_path, so it reads the
--- private tables as their owner and resolves nothing through the caller.
-
--- Domain errors return a body and set the HTTP status instead of raising, so the
--- transaction commits and rate-limit counters from the same request are kept.
 create function private.fail(p_code text, p_status integer, p_message text, p_hint text default null)
 returns jsonb
 language plpgsql
@@ -14,9 +9,6 @@ begin
 end
 $$;
 
--- Fixed-window counter. With p_count false it only checks whether one more attempt
--- would go over the limit, which is how login refuses a locked email before
--- comparing the password.
 create function private.rate_limit(
   p_action text,
   p_subject text,
@@ -69,8 +61,6 @@ begin
 end
 $$;
 
--- PostgREST db-pre-request: one bucket per client address and endpoint group.
--- Caddy sets X-Real-IP in production; without it (local Vite) every caller is "local".
 create function api.pre_request()
 returns void
 language plpgsql
@@ -128,8 +118,6 @@ begin
 end
 $$;
 
--- The agent behind the request JWT. A token whose token_version no longer matches
--- the agent row is rejected, so bumping token_version ends every session.
 create function private.current_agent_id()
 returns bigint
 language plpgsql
@@ -164,11 +152,6 @@ as $$
   where a.slug = lower(btrim(p_slug)) and m.id = p_meeting_type_id and m.active
 $$;
 
--- The one slot rule. Candidates sit on the meeting type's interval grid in the agent's
--- local time, starting at local midnight, inside a weekly window, after the minimum
--- notice, and within the agent's next 60 days. busy means the candidate's range,
--- widened by this type's buffers, overlaps the blocked range of a confirmed booking:
--- the same test the booking_no_overlap constraint applies on insert.
 create function private.slot_candidates(p_meeting_type_id bigint, p_from timestamptz, p_to timestamptz)
 returns table (slot_start timestamptz, slot_end timestamptz, busy boolean)
 language sql
@@ -301,8 +284,6 @@ as $$
   from private.weekly_hour w
   where w.agent_id = p_agent_id
 $$;
-
--- Public functions: web_anon and agent.
 
 create function api.booking_page(slug text)
 returns jsonb
@@ -470,8 +451,6 @@ begin
 
   perform private.rate_limit('create_booking', v_email || '|' || v_agent.slug, 8, 3600);
 
-  -- Serializes bookings and weekly-hour edits for one agent, so the check below
-  -- sees every booking committed before this one.
   perform pg_catalog.pg_advisory_xact_lock(v_agent.id);
 
   select c.* into v_candidate
@@ -550,8 +529,6 @@ begin
 end
 $$;
 
--- Anonymous only.
-
 create function api.login(email text, password text)
 returns jsonb
 language plpgsql
@@ -572,7 +549,6 @@ begin
 
   select a.* into v_agent from private.agent a where lower(a.email) = v_email;
 
-  -- An unknown email still pays for one bcrypt comparison.
   if public.crypt(v_password, coalesce(v_agent.password_hash, '$2a$10$' || repeat('x', 53)))
     is distinct from v_agent.password_hash then
     perform private.rate_limit('login_failed', v_email, 5, 900);
@@ -590,8 +566,6 @@ begin
   );
 end
 $$;
-
--- Agent only. Each function resolves the agent from the JWT.
 
 create function api.agent_session()
 returns jsonb
@@ -690,7 +664,6 @@ begin
 end
 $$;
 
--- hours is the whole week: [{ "weekday": 1, "start_local": "09:00", "end_local": "17:00" }, ...]
 create function api.agent_replace_weekly_hours(hours jsonb)
 returns jsonb
 language plpgsql
@@ -745,7 +718,6 @@ begin
 end
 $$;
 
--- meeting_type_id null creates a type. Slot interval and minimum notice keep their defaults.
 create function api.agent_upsert_meeting_type(
   meeting_type_id bigint,
   name text,

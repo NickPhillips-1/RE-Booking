@@ -1,7 +1,3 @@
--- Every RPC goes through one gate: a global per-address limit, then the limit
--- and role for the page that calls it. A request that names an unknown function
--- is rejected here, so a new endpoint is closed until it is added to a page.
-
 create function private.require_role(p_role text, p_allowed text[])
 returns void
 language plpgsql
@@ -41,23 +37,19 @@ declare
 begin
   perform private.rate_limit('ip:all', v_ip, 300, 60);
 
-  -- OpenAPI and any non-RPC request stop after the global limit.
   if v_fn is null then
     return;
   end if;
 
   case v_fn
-    -- Login. Anonymous only.
     when 'login', 'guest_login' then
       perform private.require_role(v_role, array['web_anon']);
       perform private.rate_limit('ip:login', v_ip, 30, 900);
 
-    -- Signup. Anonymous only.
     when 'guest_signup' then
       perform private.require_role(v_role, array['web_anon']);
       perform private.rate_limit('ip:guest_signup', v_ip, 20, 3600);
 
-    -- Public booking page. Anonymous, or a guest or agent who is already signed in.
     when 'booking_page', 'available_dates', 'available_slots' then
       perform private.require_role(v_role, array['web_anon', 'guest', 'agent']);
       perform private.rate_limit('ip:public_read', v_ip, 120, 60);
@@ -65,12 +57,10 @@ begin
       perform private.require_role(v_role, array['web_anon', 'guest', 'agent']);
       perform private.rate_limit('ip:create_booking', v_ip, 20, 3600);
 
-    -- Confirmation page. The cancel token is the secret; any role may present it.
     when 'booking_by_token', 'cancel_booking' then
       perform private.require_role(v_role, array['web_anon', 'guest', 'agent']);
       perform private.rate_limit('ip:booking_token', v_ip, 60, 3600);
 
-    -- Guest page.
     when 'guest_session', 'guest_list_bookings', 'list_booking_pages' then
       perform private.require_role(v_role, array['guest']);
       perform private.rate_limit('ip:guest_read', v_ip, 120, 60);
@@ -78,7 +68,6 @@ begin
       perform private.require_role(v_role, array['guest']);
       perform private.rate_limit('ip:guest_write', v_ip, 60, 60);
 
-    -- Dashboard.
     when 'agent_session', 'agent_list_bookings', 'agent_list_weekly_hours', 'agent_list_meeting_types' then
       perform private.require_role(v_role, array['agent']);
       perform private.rate_limit('ip:agent_read', v_ip, 120, 60);
@@ -94,5 +83,4 @@ begin
 end
 $$;
 
--- The directory is part of the guest page, so only a guest session can read it.
 revoke execute on function api.list_booking_pages() from web_anon, agent;

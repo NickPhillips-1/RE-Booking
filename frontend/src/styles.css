@@ -1,8 +1,3 @@
-/* Visual rules live in DESIGN.md: black and white, one family, three type roles,
-   8px radius on buttons, chips, and inputs, 1px borders, no shadows, 8px base unit.
-   Login uses these rules. Booking, confirmation, client appointments, and
-   the agent dashboard layer their own tokens on top in dashboard.css. */
-
 :root {
   --ink: #000;
   --paper: #fff;
@@ -56,8 +51,6 @@ a {
   outline-offset: 2px;
 }
 
-/* Type roles */
-
 .title {
   font-size: 22px;
   font-weight: 400;
@@ -82,8 +75,6 @@ a {
   clip-path: inset(50%);
   white-space: nowrap;
 }
-
-/* Layout */
 
 .page {
   display: flex;
@@ -112,8 +103,6 @@ a {
   flex-direction: column;
   gap: 16px;
 }
-
-/* Controls */
 
 .button {
   display: inline-flex;

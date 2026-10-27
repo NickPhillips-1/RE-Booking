@@ -1,5 +1,3 @@
--- Listings a guest picks from on the public booking page.
-
 create table private.property (
   id bigint generated always as identity primary key,
   agent_id bigint not null references private.agent (id) on delete cascade,

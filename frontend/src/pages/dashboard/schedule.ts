@@ -20,7 +20,6 @@ export function parseView(value: string | null): ScheduleView {
   return value === 'list' ? value : 'calendar';
 }
 
-// Upcoming leaves out appointments that have already ended, even earlier today.
 export function matchesFilter(
   booking: ScheduleBooking,
   filter: ScheduleFilter,
@@ -44,7 +43,6 @@ export function countByFilter(
   };
 }
 
-// Today and later run soonest first, then earlier days with the most recent first.
 function compareDays(a: string, b: string, today: string): number {
   const aPast = a < today;
   const bPast = b < today;
@@ -76,7 +74,6 @@ export function groupByDay<T extends ScheduleBooking>(
     .map(([day, rows]) => ({ day, bookings: rows.sort(compareBookings) }));
 }
 
-// The confirmed appointment happening now, or else the next one to start.
 export function findNextUp(bookings: ScheduleBooking[], now: number): NextUp | null {
   let next: { bookingId: number; start: number } | null = null;
   for (const booking of bookings) {

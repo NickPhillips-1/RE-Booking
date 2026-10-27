@@ -49,7 +49,6 @@ Rate limits are counted in Postgres, per client address and per subject. Every r
 | Every request | 300 per minute per address |
 | Failed logins for one email, agent or client | 5 per 15 minutes, then correct passwords wait too |
 | Agent and client logins from one address | 30 per 15 minutes |
-| Client signups from one address | 20 per hour |
 | Client page reads | 120 per minute per address |
 | Client appointment cancels | 60 per minute per client, and 60 per minute per address |
 | Bookings for one email on one page | 8 per hour |
@@ -100,10 +99,18 @@ Frontend, from `frontend/`:
 npm run lint
 npm run format:check
 npm run typecheck
+npm test
 npm run build
 ```
 
-GitHub Actions runs the format and typecheck steps on push and on pull requests. The workflow is [.github/workflows/lint.yml](.github/workflows/lint.yml).
+Backend, from `backend/`:
+
+```bash
+uv run ruff format --check .
+uv run pytest
+```
+
+GitHub Actions runs format, typecheck, and tests on push and on pull requests. The workflow is [.github/workflows/lint.yml](.github/workflows/lint.yml).
 
 ## Deploy
 
@@ -159,6 +166,17 @@ COMPOSE="docker compose --env-file .env.production -f compose.yaml -f compose.pr
 
 The script prompts for the password. Running it again for the same slug sets a new password and ends that agent's sessions.
 
+### Create a client
+
+There is no public signup. Create a client the same way, against the running stack:
+
+```bash
+COMPOSE="docker compose --env-file .env.production -f compose.yaml -f compose.prod.yaml" \
+  deploy/create-client.sh client@example.com "Alex Chen" "555-010-0100"
+```
+
+The script prompts for the password. Running it again for the same email sets a new password and ends that client's sessions. Name and phone stay as they were.
+
 ## Operations
 
 - **Backups.** `prod exec -T postgres sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > backup.sql`. Bookings live only in the `pgdata` volume, and `down -v` deletes it.
@@ -172,8 +190,8 @@ The script prompts for the password. Running it again for the same slug sets a n
 - `db/migrations/`: schema, roles, and the `api` functions
 - `db/seed/agent.sql`: one agent with hours and two meeting types
 - `db/seed/client.sql`: one client account
-- `deploy/`: migration runner, agent script, and Caddyfiles
+- `deploy/`: migration runner, agent and client scripts, and Caddyfiles
 - `compose.yaml`, `compose.prod.yaml`: local stack and production overlay
 - `frontend/`: Vite, React, and TypeScript, plus its Dockerfile and `vercel.json`
-- `backend/`: FastAPI app with `GET /health`. The booking app runs on PostgREST, so nothing calls it yet.
-- `.github/workflows/lint.yml`: format and typecheck
+- `backend/`: FastAPI `GET /health`, with its own checks. Booking goes through PostgREST.
+- `.github/workflows/lint.yml`: format, typecheck, and tests

@@ -26,7 +26,6 @@ export default function MeetingsPage() {
   const [saved, setSaved] = useState<AgentMeetingType[]>();
   const [editing, setEditing] = useState<number | 'new' | null>(null);
   const loaded = useLoad('types', () => api.agentListMeetingTypes());
-  // Only this page changes meeting types, so each saved row is merged into the list.
   const types = saved ?? loaded.data;
 
   async function save(input: MeetingTypeInput) {

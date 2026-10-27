@@ -49,7 +49,6 @@ const VIEWS: SegmentedOption<ScheduleView>[] = [
   { value: 'calendar', label: 'Calendar', icon: <CalendarDays /> },
 ];
 
-// Ticks once a minute so Upcoming, Now, and Today stay accurate while the page is open.
 function useNow(): number {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -69,7 +68,6 @@ export default function SchedulePage() {
   const view = parseView(searchParams.get('view'));
 
   const [version, setVersion] = useState(0);
-  // Visitors add and cancel bookings, so the list is fetched again after each cancel.
   const bookings = useLoad(`bookings|${version}`, () => api.agentListBookings());
   const [cancelledIds, setCancelledIds] = useState<ReadonlySet<number>>(() => new Set());
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -82,7 +80,6 @@ export default function SchedulePage() {
 
   const loaded = bookings.latest !== undefined;
   const refreshing = loaded && bookings.data === undefined && bookings.error === undefined;
-  // A cancel the server accepted shows at once instead of waiting for the refetch.
   const all = (bookings.latest ?? []).map((booking) =>
     cancelledIds.has(booking.booking_id) ? { ...booking, status: 'cancelled' as const } : booking,
   );
@@ -114,7 +111,6 @@ export default function SchedulePage() {
     setSelectedId(booking.booking_id);
   }
 
-  // The row that opened the panel may be gone (a cancel can drop it from Upcoming).
   function handleClosed() {
     setSelectedId(null);
     setCancelError(null);

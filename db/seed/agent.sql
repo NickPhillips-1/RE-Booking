@@ -1,10 +1,3 @@
--- Creates one agent with Monday to Friday 9:00 to 5:00 hours, two meeting types,
--- and a few listings. Running it again for the same slug leaves hours, meeting
--- types, and listings alone. A new password replaces the old one and ends
--- existing sessions.
---
--- psql variables: slug, email, name, brand_name, timezone, password
-
 begin;
 
 with created as (

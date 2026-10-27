@@ -42,7 +42,6 @@ export function zoneChoices(...first: string[]): string[] {
 
 export type YearMonth = { year: number; month: number };
 
-// Matches the 60-day horizon in private.slot_candidates.
 export const BOOKING_HORIZON_DAYS = 60;
 
 export function todayIn(zone: string, plusDays = 0): string {
@@ -72,7 +71,6 @@ export function monthRange({ year, month }: YearMonth): { from: string; to: stri
   return { from: `${year}-${pad(month)}-01`, to: `${year}-${pad(month)}-${pad(lastDay)}` };
 }
 
-// Sunday-first grid cells for one month: null pads the first week.
 export function monthCells({ year, month }: YearMonth): (string | null)[] {
   const lead = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
   const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
@@ -101,18 +99,15 @@ export function shiftDate(isoDate: string, by: { days?: number; months?: number 
   return DateTime.fromISO(isoDate).plus(by).toFormat('yyyy-MM-dd');
 }
 
-// 0 is Sunday, matching WEEKDAY_NAMES and monthCells.
 export function weekdayOf(isoDate: string): number {
   return DateTime.fromISO(isoDate).weekday % 7;
 }
 
-// "17:00" -> "5:00 PM"
 export function formatWallTime(hhmm: string): string {
   const [hour, minute] = hhmm.split(':').map(Number);
   return DateTime.fromObject({ hour: hour % 24, minute }).toFormat('h:mm a');
 }
 
-// "5:00 PM", "17:00", "5pm" -> "17:00". Null when the text is not a time.
 export function parseWallTime(value: string): string | null {
   const text = value
     .trim()

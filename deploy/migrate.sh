@@ -1,7 +1,4 @@
 #!/bin/sh
-# Applies db/migrations/*.sql in filename order, once each, then copies the
-# authenticator password and JWT secret from the environment into the database.
-# Connection settings come from PGHOST, PGUSER, PGPASSWORD, and PGDATABASE.
 set -eu
 
 psql="psql -X -q -v ON_ERROR_STOP=1"
@@ -13,6 +10,12 @@ $psql -c "create table if not exists public.schema_migrations (
 
 for file in /db/migrations/*.sql; do
   version=$(basename "$file" .sql)
+  case $version in
+    *[!A-Za-z0-9_]*)
+      echo "migrate: version must be letters, digits, and underscores: $version" >&2
+      exit 1
+      ;;
+  esac
   applied=$($psql -tA -c "select 1 from public.schema_migrations where version = '$version'")
   if [ -z "$applied" ]; then
     echo "migrate: applying $version"

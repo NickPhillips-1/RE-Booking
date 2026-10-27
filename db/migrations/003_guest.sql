@@ -1,7 +1,3 @@
--- Guest accounts. A guest logs in with email and password, the same way an
--- agent does, and gets a JWT whose role is guest. Appointments they book while
--- that session is active store guest_id. Anonymous bookings leave it null.
-
 do $$
 begin
   if not exists (select from pg_roles where rolname = 'guest') then
@@ -30,9 +26,6 @@ alter table private.booking
 
 create index booking_guest_start on private.booking (guest_id, start_at);
 
--- p_required false is the booking page: no guest session means an anonymous
--- visit. A guest token whose token_version no longer matches still fails,
--- so a logged-out session cannot be saved as if nobody was signed in.
 create function private.current_guest_id(p_required boolean default true)
 returns bigint
 language plpgsql
@@ -175,8 +168,6 @@ begin
 
   perform private.rate_limit('create_booking', v_email || '|' || v_agent.slug, 8, 3600);
 
-  -- Serializes bookings and weekly-hour edits for one agent, so the check below
-  -- sees every booking committed before this one.
   perform pg_catalog.pg_advisory_xact_lock(v_agent.id);
 
   select c.* into v_candidate
@@ -214,8 +205,6 @@ begin
 end
 $$;
 
--- Anonymous only.
-
 create function api.guest_login(email text, password text)
 returns jsonb
 language plpgsql
@@ -235,7 +224,6 @@ begin
 
   select g.* into v_guest from private.guest g where lower(g.email) = v_email;
 
-  -- An unknown email still pays for one bcrypt comparison.
   if public.crypt(v_password, coalesce(v_guest.password_hash, '$2a$10$' || repeat('x', 53)))
     is distinct from v_guest.password_hash then
     perform private.rate_limit('login_failed', v_email, 5, 900);
@@ -284,8 +272,6 @@ begin
   return private.guest_session_token(v_guest);
 end
 $$;
-
--- Guest only.
 
 create function api.guest_session()
 returns jsonb

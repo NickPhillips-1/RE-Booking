@@ -1,6 +1,3 @@
--- Public directory of realtor booking pages, so a guest can start a booking
--- without already having an appointment or knowing the slug.
-
 create function api.list_booking_pages()
 returns jsonb
 language sql

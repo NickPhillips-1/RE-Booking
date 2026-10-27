@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getToken, sessionRole, setToken } from './auth';
 
 declare global {
@@ -7,7 +7,6 @@ declare global {
   }
 }
 
-// Docker serves /config.js with the runtime API_URL. Vercel and Vite use the build-time value.
 const API_URL = (
   window.__APP_CONFIG__?.apiUrl ||
   import.meta.env.VITE_API_URL ||
@@ -244,16 +243,19 @@ export const api = {
 
 type Loaded<T> = { key: string; data?: T; error?: unknown };
 
-// Loads once per key. `data` belongs to the current key; `latest` is the last
-// successful result for any key, for screens that should not blank while refreshing.
 export function useLoad<T>(key: string | null, load: () => Promise<T>) {
   const [current, setCurrent] = useState<Loaded<T> | null>(null);
   const [latest, setLatest] = useState<T | undefined>(undefined);
+  const loadRef = useRef(load);
+
+  useEffect(() => {
+    loadRef.current = load;
+  }, [load]);
 
   useEffect(() => {
     if (key === null) return;
     let ignore = false;
-    load().then(
+    loadRef.current().then(
       (data) => {
         if (ignore) return;
         setCurrent({ key, data });
@@ -266,8 +268,6 @@ export function useLoad<T>(key: string | null, load: () => Promise<T>) {
     return () => {
       ignore = true;
     };
-    // The key names the request; `load` is a new closure on every render.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key]);
 
   const settled = current !== null && current.key === key;

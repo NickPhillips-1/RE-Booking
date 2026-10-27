@@ -1,6 +1,3 @@
--- PostgREST runs STABLE functions in a read-only transaction. pre_request
--- writes a rate-limit row, so this has to be a regular function.
-
 create or replace function api.list_booking_pages()
 returns jsonb
 language sql

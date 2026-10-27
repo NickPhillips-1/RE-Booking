@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
-// Realtor and client sessions share this key. The JWT role says which.
-const TOKEN_KEY = 'agent_token';
+const TOKEN_KEY = 'session_token';
+const LEGACY_TOKEN_KEY = 'agent_token';
 const listeners = new Set<() => void>();
 
 export type SessionRole = 'agent' | 'client';
@@ -20,12 +20,19 @@ export function sessionRole(token: string): SessionRole | null {
 }
 
 export function getToken(): string | null {
-  return sessionStorage.getItem(TOKEN_KEY);
+  const token = sessionStorage.getItem(TOKEN_KEY);
+  const legacy = sessionStorage.getItem(LEGACY_TOKEN_KEY);
+  if (legacy !== null) {
+    if (token === null) sessionStorage.setItem(TOKEN_KEY, legacy);
+    sessionStorage.removeItem(LEGACY_TOKEN_KEY);
+  }
+  return token ?? legacy;
 }
 
 export function setToken(token: string | null): void {
   if (token) sessionStorage.setItem(TOKEN_KEY, token);
   else sessionStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(LEGACY_TOKEN_KEY);
   listeners.forEach((listener) => listener());
 }
 

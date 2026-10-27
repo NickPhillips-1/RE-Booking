@@ -62,7 +62,6 @@ create table private.meeting_type (
   unique (agent_id, id)
 );
 
--- Weekday is Sunday 0 through Saturday 6, the same as extract(dow).
 create table private.weekly_hour (
   agent_id bigint not null references private.agent (id),
   weekday smallint not null check (weekday between 0 and 6),
@@ -75,8 +74,6 @@ create table private.weekly_hour (
   )
 );
 
--- blocked_start and blocked_end include the buffers as they were at booking time,
--- so editing a meeting type never moves busy time that is already booked.
 create table private.booking (
   id bigint generated always as identity primary key,
   agent_id bigint not null,

@@ -1,8 +1,3 @@
--- Creates one client. Running it again for the same email leaves the name and
--- phone alone. A new password replaces the old one and ends existing sessions.
---
--- psql variables: email, name, phone, password
-
 begin;
 
 insert into private.client (name, email, phone, password_hash)
