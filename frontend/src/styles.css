@@ -1,5 +1,5 @@
 /* Visual rules live in DESIGN.md: black and white, one family, three type roles,
-   square controls except 8px button radius, 1px borders, no shadows, 8px base unit.
+   8px radius on buttons, chips, and inputs, 1px borders, no shadows, 8px base unit.
    Login uses these rules. Booking, confirmation, client appointments, and
    the agent dashboard layer their own tokens on top in dashboard.css. */
 
@@ -155,7 +155,7 @@ a {
   height: 40px;
   padding: 0 12px;
   border: 1px solid var(--ink);
-  border-radius: 0;
+  border-radius: var(--button-radius);
   background: var(--paper);
   font-size: 15px;
 }
@@ -196,7 +196,7 @@ a {
   height: 36px;
   padding: 0 12px;
   border: 1px solid var(--ink);
-  border-radius: 0;
+  border-radius: var(--button-radius);
   background: var(--paper);
   font-size: 15px;
   cursor: pointer;
