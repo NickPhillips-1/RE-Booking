@@ -1,0 +1,8 @@
+# API only. Vercel serves the frontend.
+
+{$API_HOST} {
+	reverse_proxy postgrest:3000 {
+		# Rate limits key on this header, so it must be the real client address.
+		header_up X-Real-IP {remote_host}
+	}
+}

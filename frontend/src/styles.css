@@ -1,0 +1,311 @@
+/* Visual rules live in DESIGN.md: black and white, one family, three type roles,
+   square controls except 8px button radius, 1px borders, no shadows, 8px base unit.
+   Login and signup use these rules. Booking, confirmation, guest appointments, and
+   the agent dashboard layer their own tokens on top in dashboard.css. */
+
+:root {
+  --ink: #000;
+  --paper: #fff;
+  --hairline: color-mix(in srgb, var(--ink) 20%, transparent);
+  --button-radius: 8px;
+
+  color: var(--ink);
+  background: var(--paper);
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+h1,
+h2,
+p,
+ul {
+  margin: 0;
+}
+
+ul {
+  padding: 0;
+  list-style: none;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 2px;
+}
+
+/* Type roles */
+
+.title {
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.quiet {
+  opacity: 0.55;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Layout */
+
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.section + .section {
+  padding-top: 32px;
+  border-top: 1px solid var(--hairline);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.booking-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.role-line {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--hairline);
+}
+
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Controls */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--ink);
+  border-radius: var(--button-radius);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.3;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.button.primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.button.block {
+  width: 100%;
+}
+
+.button:disabled,
+.chip:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.text-button {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 15px;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.text-button:disabled {
+  opacity: 0.35;
+  text-decoration: none;
+  cursor: default;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input,
+.select {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: var(--paper);
+  font-size: 15px;
+}
+
+.select {
+  appearance: none;
+  padding-right: 32px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+}
+
+.checkbox input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--ink);
+}
+
+.error {
+  font-size: 15px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  background: var(--paper);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.chip[aria-pressed='true'],
+.day[aria-pressed='true'] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.zone-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.zone-line .select {
+  width: auto;
+  height: 36px;
+}
+
+/* Month */
+
+.month {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.month-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.month-nav {
+  display: flex;
+  gap: 16px;
+}
+
+.month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 36px);
+  justify-content: space-between;
+  row-gap: 4px;
+}
+
+.weekday {
+  height: 24px;
+  text-align: center;
+}
+
+.day {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--paper);
+  border-radius: 0;
+  background: var(--paper);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.day:not(:disabled):hover {
+  border-color: var(--ink);
+}
+
+.day:disabled {
+  opacity: 0.35;
+  cursor: default;
+}

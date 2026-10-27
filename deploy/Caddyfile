@@ -1,0 +1,12 @@
+# API and frontend on one Docker host. Caddy gets certificates for both names.
+
+{$API_HOST} {
+	reverse_proxy postgrest:3000 {
+		# Rate limits key on this header, so it must be the real client address.
+		header_up X-Real-IP {remote_host}
+	}
+}
+
+{$APP_HOST} {
+	reverse_proxy frontend:8080
+}
